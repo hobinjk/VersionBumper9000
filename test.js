@@ -1,2 +1,2 @@
-//* VERSION beta **//
+//* VERSION veryhacked **//
 console.log('hello world!');
