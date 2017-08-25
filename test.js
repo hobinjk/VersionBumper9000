@@ -1,2 +1,2 @@
-//* VERSION helloworld **//
+//* VERSION undefined **//
 console.log('hello world!');
