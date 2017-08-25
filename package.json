@@ -1,0 +1,24 @@
+{
+  "name": "versionbumper9000",
+  "version": "0.0.1",
+  "description": "GitHub bot for bumping XKit version tags",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/new-xkit/VersionBumper9000.git"
+  },
+  "author": "New XKit Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/new-xkit/VersionBumper9000/issues"
+  },
+  "homepage": "https://github.com/new-xkit/VersionBumper9000#readme",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.4"
+  }
+}
