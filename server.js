@@ -2,6 +2,7 @@ const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const express = require('express');
 const http = require('http');
+const path = require('path');
 const performBumps = require('./transform');
 const secret = require('./secret');
 
@@ -50,11 +51,17 @@ app.post('/issue-comment-hook', function(req, res) {
     if (!matches) {
       break;
     }
-    let fileName = matches[1];
-    if (fileName[0] == '"') {
+    let unsafeFileName = matches[1];
+    if (unsafeFileName[0] == '"') {
       // Trim enclosing quotes
-      fileName = fileName.substr(1, fileName.length - 2);
+      unsafeFileName = unsafeFileName.substr(1, unsafeFileName.length - 2);
     }
+    const fileName = path.normalize(unsafeFileName);
+    if (fileName.startsWith('/') || fileName.startsWith('.')) {
+      console.warn('skipping unsafe filename', fileName);
+      continue;
+    }
+
     let newVersion = matches[2];
 
     bumps.push({
@@ -63,7 +70,7 @@ app.post('/issue-comment-hook', function(req, res) {
     });
   }
 
-  if (!bumps) {
+  if (bumps.length === 0) {
     return;
   }
 
