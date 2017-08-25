@@ -1,23 +1,65 @@
+const fetch = require('node-fetch');
 const fs = require('fs');
+const util = require('util');
 
-if (process.argv.length !== 4) {
-  console.error('Usage: node bump.js path-to-file.js version');
-  process.exit(-1);
+const childProcess = require('child_process');
+const exec = util.promisify(childProcess.exec);
+
+function execInTmp(command) {
+  return exec(command, {cwd: 'tmp'});
 }
-// Look for //* VERSION
-const versionRegex = /^\/\/\*\s*VERSION/;
-const fileName = process.argv[2];
-const newVersion = process.argv[3];
 
-const fileContents = fs.readFileSync(fileName, {encoding: 'utf8'});
-const lines = fileContents.split('\n');
-for (let i = 0; i < lines.length; i++) {
-  const line = lines[i];
-  if (line.match(versionRegex)) {
-    lines[i] = `//* VERSION ${newVersion} **//`;
-    break;
+function performBumps(prUrl, bumps) {
+  clonePR(prUrl).then(function() {
+    for (let bump of bumps) {
+      bumpVersion('tmp/' + bump.fileName, bump.newVersion);
+    }
+    return pushBump();
+  }).then(function() {
+    console.log('success!', prUrl, bumps);
+  }).catch(function(err) {
+    console.log('failed!', prUrl, bumps, err);
+  });
+}
+
+function clonePR(prUrl) {
+  let pr = null;
+  return fetch(prUrl).then(function(res) {
+    return res.json();
+  }).then(function(prObj) {
+    pr = prObj;
+    let sshUrl = pr.head.repo.ssh_url;
+    return exec(`git clone ${sshUrl} tmp`);
+  }).then(function() {
+    return execInTmp(`git checkout ${pr.head.ref}`);
+  });
+}
+
+function pushBump() {
+  return execInTmp('git add .').then(function() {
+    return execInTmp('git commit -m "Version bump!"');
+  }).then(function() {
+    return execInTmp('git push');
+  }).then(function() {
+    return exec('rm -fr tmp');
+  });
+}
+
+function bumpVersion(fileName, newVersion) {
+  // Look for //* VERSION
+  const versionRegex = /^\/\/\*\s*VERSION/;
+
+  const fileContents = fs.readFileSync(fileName, {encoding: 'utf8'});
+  const lines = fileContents.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.match(versionRegex)) {
+      lines[i] = `//* VERSION ${newVersion} **//`;
+      break;
+    }
   }
+
+  fs.writeFileSync(fileName, lines.join('\n'));
 }
 
-fs.writeFileSync(fileName, lines.join('\n'));
-
+module.exports = performBumps;
