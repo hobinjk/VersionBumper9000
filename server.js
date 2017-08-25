@@ -1,7 +1,9 @@
 const bodyParser = require('body-parser');
+const crypto = require('crypto');
 const express = require('express');
 const http = require('http');
 const performBumps = require('./transform');
+const secret = require('./secret');
 
 const app = express();
 
@@ -12,6 +14,29 @@ app.use(bodyParser.json());
 
 app.post('/issue-comment-hook', function(req, res) {
   res.sendStatus(200);
+
+  const gitHmac = req.headers['x-hub-signature'];
+  const [alg, gitDigest] = gitHmac.split('=');
+
+  let knownAlgs = {
+    sha1: true,
+    sha256: true,
+    sha512: true
+  };
+
+  if (!knownAlgs[alg]) {
+    console.log('Unknown alg', alg);
+    return;
+  }
+
+  const hmac = crypto.createHmac(alg, secret);
+  hmac.update(JSON.stringify(req.body));
+  const digest = hmac.digest('hex');
+
+  if (digest !== gitDigest) {
+    console.log('Verification error', req.body);
+    return;
+  }
 
   if (!req.body.issue.pull_request) {
     return;
