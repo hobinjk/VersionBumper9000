@@ -32,6 +32,12 @@ function clonePR(prUrl) {
     return exec(`git clone ${sshUrl} tmp`);
   }).then(function() {
     return execInTmp(`git checkout ${pr.head.ref}`);
+  }).then(function() {
+    return execInTmp(`git remote add new-xkit git@github.com:new-xkit/XKit.git`);
+  }).then(function() {
+    return execInTmp(`git fetch new-xkit`);
+  }).then(function() {
+    return execInTmp(`git rebase new-xkit master`);
   });
 }
 
@@ -39,7 +45,7 @@ function pushBump() {
   return execInTmp('git add .').then(function() {
     return execInTmp('git commit -m "Version bump!"');
   }).then(function() {
-    return execInTmp('git push');
+    return execInTmp('git push -f');
   }).then(function() {
     return exec('rm -fr tmp');
   });
