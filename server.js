@@ -30,7 +30,7 @@ app.post('/issue-comment-hook', function(req, res) {
     return;
   }
 
-  const hmac = crypto.createHmac(alg, secret);
+  const hmac = crypto.createHmac(alg, secret.hook);
   hmac.update(JSON.stringify(req.body));
   const digest = hmac.digest('hex');
 
