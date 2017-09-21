@@ -6,6 +6,8 @@ const util = require('util');
 const childProcess = require('child_process');
 const exec = util.promisify(childProcess.exec);
 
+const mainRepo = 'new-xkit/XKit';
+
 function execInTmp(command) {
   return exec(command, {cwd: 'tmp'});
 }
@@ -32,7 +34,7 @@ function performBumps(prUrl, bumps) {
     };
 
     let commentsUrl =
-      `https://api.github.com/repos/new-xkit/XKit/issues/${pr.number}/comments`;
+      `https://api.github.com/repos/${mainRepo}/issues/${pr.number}/comments`;
 
     fetch(commentsUrl, {
       method: 'POST',
@@ -55,11 +57,11 @@ function clonePR(pr) {
     return execInTmp(`git checkout ${pr.head.ref}`);
   }).then(function() {
     return execInTmp(
-      `git remote add new-xkit git@github.com:new-xkit/XKit.git`);
+      `git remote add main git@github.com:${mainRepo}.git`);
   }).then(function() {
-    return execInTmp(`git fetch new-xkit`);
+    return execInTmp(`git fetch main`);
   }).then(function() {
-    return execInTmp(`git rebase new-xkit master`);
+    return execInTmp(`git rebase main/master`);
   });
 }
 
