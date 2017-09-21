@@ -51,7 +51,7 @@ function performBumps(prUrl, bumps) {
 
 function clonePR(pr) {
   let sshUrl = pr.head.repo.ssh_url;
-  exec(`git clone ${sshUrl} tmp`).then(function() {
+  return exec(`git clone ${sshUrl} tmp`).then(function() {
     return execInTmp(`git checkout ${pr.head.ref}`);
   }).then(function() {
     return execInTmp(
