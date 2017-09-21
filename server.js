@@ -11,6 +11,7 @@ app.use(bodyParser.json());
 
 app.get('/issue-comment-hook', function(req, res) {
   console.log(req.body);
+  // broken broken broken no merge for you
   res.sendStatus(200);
 });
 
