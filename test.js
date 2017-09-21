@@ -1,2 +1,2 @@
-//* VERSION pls **//
+//* VERSION test **//
 console.log('hello world!');
